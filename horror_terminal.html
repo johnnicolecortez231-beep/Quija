@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL_666</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #030701;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Scanline filter for retro CRT look */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* CRT Screen Flicker */
+        .terminal-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80%;
+            background-color: #050c02;
+            border: 4px solid #1f4d0f;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(31, 77, 15, 0.4);
+            display: flex;
+            flex-direction: column;
+            animation: textShadow 1.5s infinite;
+        }
+
+        .output-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            color: #4af626;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px rgba(74, 246, 38, 0.5);
+        }
+
+        /* Hidden scrollbar */
+        .output-area::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            color: #4af626;
+            font-size: 1.2rem;
+        }
+
+        .prompt {
+            margin-right: 10px;
+            user-select: none;
+        }
+
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #4af626;
+            font-family: inherit;
+            font-size: inherit;
+            flex-grow: 1;
+            outline: none;
+            text-shadow: 0 0 5px rgba(74, 246, 38, 0.5);
+        }
+
+        /* Jumpscare overlay */
+        #jumpscare-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #500;
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            font-size: 8rem;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Glitch animations via CSS */
+        .glitch-active {
+            animation: glitchEffect 0.15s infinite !important;
+            background-color: #1c0000 !important;
+            border-color: #ff0000 !important;
+        }
+        .glitch-active .output-area, .glitch-active #cmd-input, .glitch-active .prompt {
+            color: #ff2222 !important;
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.8) !important;
+        }
+
+        @keyframes textShadow {
+            0% { text-shadow: 0 0 4px rgba(74,246,38,0.5); }
+            50% { text-shadow: 0 0 10px rgba(74,246,38,0.6); }
+            100% { text-shadow: 0 0 4px rgba(74,246,38,0.5); }
+        }
+
+        @keyframes glitchEffect {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container" id="terminal">
+        <div class="output-area" id="output">SYSTEM BOOT SUCCESSFUL...
+WARNING: UNSANCTIONED ACCESS DETECTED.
+TYPE YOUR STORY. THEY ARE LISTENING.
+
+</div>
+        <div class="input-line">
+            <span class="prompt">USER@LOG_></span>
+            <input type="text" id="cmd-input" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <div id="jumpscare-overlay">👁️</div>
+
+    <script>
+        const output = document.getElementById('output');
+        const input = document.getElementById('cmd-input');
+        const terminal = document.getElementById('terminal');
+        const jumpscare = document.getElementById('jumpscare-overlay');
+
+        // Web Audio API to synthesis typewriter sounds out of thin air
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTypewriterSound(isEnter = false) {
+            // Create synth nodes
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isEnter) {
+                // Bell ring/carriage return sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else {
+                // Mechanical click (Noise burst simulation)
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150 + Math.random() * 100, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            }
+        }
+
+        // List of creepy words that triggers glitching
+        const horrorKeywords = ['DEAD', 'GHOST', 'HELP', 'SHADOW', 'BLOOD', 'KILL', 'MONSTER', 'DEATH', 'TAKO', 'MULTU'];
+
+        input.addEventListener('input', (e) => {
+            playTypewriterSound(false);
+
+            const currentText = input.value.toUpperCase();
+            // Check if user typed any creepy words
+            const triggered = horrorKeywords.some(word => currentText.includes(word));
+
+            if (triggered) {
+                terminal.classList.add('glitch-active');
+            } else {
+                terminal.classList.remove('glitch-active');
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = input.value.trim();
+                if (!val) return;
+
+                playTypewriterSound(true);
+                terminal.classList.remove('glitch-active');
+
+                // Append text to terminal output
+                output.textContent += `\n> ${input.value}`;
+                input.value = '';
+                output.scrollTop = output.scrollHeight;
+
+                // Chance to trigger sudden Jumpscare flash on Enter press!
+                if (Math.random() < 0.35 || horrorKeywords.some(w => val.toUpperCase().includes(w))) {
+                    triggerJumpscare();
+                }
+            }
+        });
+
+        function triggerJumpscare() {
+            jumpscare.style.display = 'flex';
+            
+            // Glitch screen loop during jumpscare
+            let interval = setInterval(() => {
+                jumpscare.style.backgroundColor = jumpscare.style.backgroundColor === 'rgb(85, 0, 0)' ? '#000' : '#500';
+                jumpscare.style.color = jumpscare.style.color === 'rgb(0, 0, 0)' ? '#fff' : '#000';
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(interval);
+                jumpscare.style.display = 'none';
+                output.textContent = "SYSTEM CORRUPTED...\nREBOOTING LOG_\n\n";
+            }, 600);
+        }
+
+        // Force focus back onto input if user clicks anywhere on screen
+        document.addEventListener('click', () => {
+            input.focus();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        });
+    </script>
+</body>
+</html>
