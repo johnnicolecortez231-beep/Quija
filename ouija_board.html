@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Ouija Board</title>
+    <style>
+        body {
+            background-color: #120d0a;
+            color: #ebdcb9;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* The Board */
+        .ouija-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background: radial-gradient(circle, #2c1e15 0%, #1a110b 100%);
+            border: 12px double #4a3321;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        /* Typography styles */
+        .board-text {
+            font-size: 2rem;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .mystic-symbol {
+            font-size: 3rem;
+            opacity: 0.6;
+            filter: sepia(1);
+        }
+
+        .alphabet-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .arc-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: 5px;
+        }
+
+        .arc-row span, .numbers-row span {
+            display: inline-block;
+            transition: color 0.3s;
+        }
+
+        .numbers-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 1.8rem;
+            opacity: 0.8;
+        }
+
+        .bottom-row {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* The Planchette */
+        #planchette {
+            position: absolute;
+            top: 75%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 110px;
+            background: rgba(218, 195, 147, 0.85);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            clip-path: polygon(50% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%); /* Planchette shape */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.5);
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+            z-index: 10;
+        }
+
+        #planchette:active {
+            cursor: grabbing;
+        }
+
+        /* Viewing window inside the planchette */
+        .lens {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 3px solid #4a3321;
+            border-radius: 50%;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        /* Control Panel at the bottom */
+        .control-panel {
+            margin-top: 30px;
+            background: #1e1712;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3a2a1d;
+            text-align: center;
+        }
+
+        .control-panel input {
+            background: #120d0a;
+            border: 1px solid #4a3321;
+            color: #ebdcb9;
+            padding: 8px;
+            font-size: 1rem;
+            border-radius: 4px;
+            width: 250px;
+        }
+
+        .control-panel button {
+            background: #4a3321;
+            color: #ebdcb9;
+            border: none;
+            padding: 8px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .control-panel button:hover {
+            background: #5c4029;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #8c7662;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ouija-container">
+        <!-- Top Options -->
+        <div class="top-row">
+            <span class="board-text choice" id="yes">YES</span>
+            <div class="mystic-symbol">👁️</div>
+            <span class="board-text choice" id="no">NO</span>
+        </div>
+
+        <!-- The Alphabet Arc -->
+        <div class="alphabet-container">
+            <div class="arc-row">
+                <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span><span>J</span><span>K</span><span>L</span><span>M</span>
+            </div>
+            <div class="arc-row">
+                <span>N</span><span>O</span><span>P</span><span>Q</span><span>R</span><span>S</span><span>T</span><span>U</span><span>V</span><span>W</span><span>X</span><span>Y</span><span>Z</span>
+            </div>
+        </div>
+
+        <!-- Numbers -->
+        <div class="numbers-row">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span>
+        </div>
+
+        <!-- Bottom Option -->
+        <div class="bottom-row">
+            <span class="board-text choice" id="goodbye">GOOD BYE</span>
+        </div>
+
+        <!-- The Planchette (Pointer) -->
+        <div id="planchette">
+            <div class="lens"></div>
+        </div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <input type="text" id="secret-phrase" placeholder="Type secret answer here...">
+        <button id="summon-btn">Infect Spirit</button>
+        <p class="hint">Type a phrase, click summon, then click and HOLD the planchette to let the spirits move it.</p>
+    </div>
+
+    <script>
+        const planchette = document.getElementById('planchette');
+        const board = document.querySelector('.ouija-container');
+        const secretInput = document.getElementById('secret-phrase');
+        const summonBtn = document.getElementById('summon-btn');
+
+        let targetsQueue = [];
+        let currentTargetIndex = 0;
+        let isSpiriting = false;
+        let animationFrameId = null;
+
+        // Speed of the planchette (Lower = slower and creepier)
+        const SPEED = 0.03; 
+
+        // Finds the physical DOM elements matching your secret string characters
+        function getTargetElement(char) {
+            const cleanChar = char.toUpperCase();
+            if (cleanChar === ' ') return null; 
+            
+            if (cleanChar === 'YES') return document.getElementById('yes');
+            if (cleanChar === 'NO') return document.getElementById('no');
+            if (cleanChar === 'GOODBYE') return document.getElementById('goodbye');
+
+            const elements = document.querySelectorAll('.arc-row span, .numbers-row span');
+            return Array.from(elements).find(el => el.textContent === cleanChar);
+        }
+
+        function queueSecretPhrase() {
+            const phrase = secretInput.value.trim();
+            targetsQueue = [];
+            currentTargetIndex = 0;
+
+            if (!phrase) return;
+
+            // Handle standard special trigger phrases or single characters
+            if (['YES', 'NO', 'GOODBYE'].includes(phrase.toUpperCase())) {
+                const el = getTargetElement(phrase);
+                if (el) targetsQueue.push(el);
+            } else {
+                for (let char of phrase) {
+                    const el = getTargetElement(char);
+                    if (el) targetsQueue.push(el);
+                }
+            }
+            
+            alert("The spirits are listening. Hold down the planchette to begin.");
+        }
+
+        summonBtn.addEventListener('click', queueSecretPhrase);
+
+        // Core animation logic using Linear Interpolation (lerp)
+        function movePlanchette() {
+            if (!isSpiriting || currentTargetIndex >= targetsQueue.length) {
+                cancelAnimationFrame(animationFrameId);
+                return;
+            }
+
+            const currentTargetEl = targetsQueue[currentTargetIndex];
+            
+            const boardRect = board.getBoundingClientRect();
+            const targetRect = currentTargetEl.getBoundingClientRect();
+
+            // Calculate precise target center point relative to the board
+            const targetX = (targetRect.left + targetRect.width / 2) - boardRect.left;
+            const targetY = (targetRect.top + targetRect.height / 2) - boardRect.top;
+
+            const planchetteX = planchette.offsetLeft;
+            const planchetteY = planchette.offsetTop;
+
+            const dx = targetX - planchetteX;
+            const dy = targetY - planchetteY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Once the planchette settles directly over the target element
+            if (distance < 5) {
+                currentTargetIndex++;
+            } else {
+                // Smoothly slide a fraction of the remaining distance
+                planchette.style.left = `${planchetteX + dx * SPEED}px`;
+                planchette.style.top = `${planchetteY + dy * SPEED}px`;
+            }
+
+            animationFrameId = requestAnimationFrame(movePlanchette);
+        }
+
+        // Mouse Triggers
+        planchette.addEventListener('mousedown', (e) => {
+            if (targetsQueue.length === 0) return;
+            isSpiriting = true;
+            movePlanchette();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isSpiriting = false;
+            cancelAnimationFrame(animationFrameId);
+        });
+
+        // Touch Triggers for Mobile
+        planchette.addEventListener('touchstart', (e) => {
+            if (targetsQueue.length === 0) return;
+            isSpiriting = true;
+            movePlanchette();
+        });
+        window.addEventListener('touchend', () => {
+            isSpiriting = false;
+            cancelAnimationFrame(animationFrameId);
+        });
+    </script>
+</body>
+</html>
